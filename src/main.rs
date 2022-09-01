@@ -48,7 +48,7 @@ fn main() {
             process::exit(1);
         });
 
-        caesar_suite::encrypt(args.flag_key as u8, args.flag_input_text);
+        println!("{}", caesar_suite::encrypt(args.flag_key as u8, &args.flag_input_text));
 
     } else if args.cmd_decrypt {
 
@@ -57,7 +57,7 @@ fn main() {
             process::exit(1);
         });
 
-        caesar_suite::decrypt(args.flag_key as u8, args.flag_input_text);
+        println!("{}", caesar_suite::decrypt(args.flag_key as u8, &args.flag_input_text));
 
     } else if args.cmd_brute_force {
 
@@ -66,11 +66,18 @@ fn main() {
             process::exit(1);
         });
 
-        caesar_suite::brute_force(args.flag_dictionary, args.flag_input_text);
+        let solutions =
+            caesar_suite::brute_force(&args.flag_dictionary, &args.flag_input_text);
+
+        println!("The following were found as potential solutions:\n");
+        for solution in solutions {
+            println!("Key: {}", solution.0);
+            println!("Plain text: {}", solution.1);
+            println!();
+        }
 
     } else {
         println!("{USAGE}");
-        //unreachable!();
     }
 
 

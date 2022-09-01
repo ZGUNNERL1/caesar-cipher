@@ -1,11 +1,11 @@
 use std::{
+    process::self,
     fs::File,
     io::{BufRead, BufReader},
     path::Path,
 };
-use std::io::Read;
 
-pub fn encrypt(key: u8, plain_text: String) {
+pub fn encrypt(key: u8, plain_text: &String) -> String {
     let mut cipher_text: Vec<char> = vec![' '; plain_text.len()];
 
     for (index, letter) in plain_text.chars().enumerate() {
@@ -18,11 +18,10 @@ pub fn encrypt(key: u8, plain_text: String) {
         };
     }
 
-    let cipher_text: String = cipher_text.into_iter().collect();
-    println!("{cipher_text}");
+    cipher_text.into_iter().collect()
 }
 
-pub fn decrypt(key: u8, cipher_text: String) {
+pub fn decrypt(key: u8, cipher_text: &String) -> String {
     let mut plain_text: Vec<char> = vec![' '; cipher_text.len()];
 
     for (index, letter) in cipher_text.chars().enumerate() {
@@ -35,20 +34,33 @@ pub fn decrypt(key: u8, cipher_text: String) {
         };
     }
 
-    let plain_text: String = plain_text.into_iter().collect();
-    println!("{plain_text}");
+    plain_text.into_iter().collect()
 }
 
-pub fn brute_force(dict_path: String, cipher_text: String) {
-    println!("Dictionary Path: {dict_path}, Cipher Text: {cipher_text}");
+pub fn brute_force(dict_path: &String, cipher_text: &String) -> Vec<(usize, String)> {
     let dictionary = get_dict_from_path(dict_path);
-    println!("Dictionary: {:?}", dictionary);
+    let mut solutions: Vec<(usize, String)> = Vec::new();
+    // println!("Dictionary: {:?}", dictionary);
+
+    'key_attempt: for i in 1..=25 {
+        let plain_text= decrypt(i as u8, &cipher_text);
+        for word in plain_text.split_whitespace() {
+            if !dictionary.contains(&(word.to_string().to_uppercase())) {
+                continue 'key_attempt
+            }
+        }
+        solutions.push((i, plain_text))
+    }
+
+    solutions
 }
 
 fn get_dict_from_path(dict_path: impl AsRef<Path>) -> Vec<String>{
-    println!("get_dict_from_path");
     let mut dictionary: Vec<String> = Vec::new();
-    let file = File::open(dict_path).expect("Error opening file");
+    let file = File::open(dict_path).unwrap_or_else(|err| {
+        println!("Could not open dictionary file. {err}");
+        process::exit(1);
+    });
     let buf = BufReader::new(file);
 
 
