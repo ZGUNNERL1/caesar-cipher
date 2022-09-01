@@ -38,8 +38,11 @@ fn validate_text(string: &String) -> Result<(), &'static str> {
 fn main() {
     let args: Args = Docopt::new(USAGE)
         .and_then(|d| d.deserialize())
-        .unwrap_or_else(|e| e.exit());
-    // println!("{:?}", args);
+        .unwrap_or_else(|e| {
+            println!("Please refer to the documentation for correct usage.");
+            println!("The following error occurred: ");
+            e.exit()
+        });
 
     if args.cmd_encrypt {
 

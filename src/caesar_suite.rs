@@ -40,7 +40,6 @@ pub fn decrypt(key: u8, cipher_text: &String) -> String {
 pub fn brute_force(dict_path: &String, cipher_text: &String) -> Vec<(usize, String)> {
     let dictionary = get_dict_from_path(dict_path);
     let mut solutions: Vec<(usize, String)> = Vec::new();
-    // println!("Dictionary: {:?}", dictionary);
 
     'key_attempt: for i in 1..=25 {
         let plain_text= decrypt(i as u8, &cipher_text);
