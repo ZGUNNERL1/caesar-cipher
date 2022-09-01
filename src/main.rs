@@ -1,22 +1,21 @@
+use std::process;
 use docopt::Docopt;
 use serde::Deserialize;
 
 mod caesar_suite;
 
-const USAGE: &'static str = "
-Caesar Cipher Tool.
+const USAGE: &'static str = "Caesar Cipher Tool.
 
 Usage:
     caesar-cipher (encrypt | decrypt) [--key <int>] (--input-text <string>)
-    caesar-cipher brute-force (--dictionary <path>)
-    caesar-cipher (--help)
+    caesar-cipher brute-force (--dictionary <path>) (--input-text <string>)
+    caesar-cipher [--help]
 
 Options:
     -h, --help                          Show this help message and exit.
     -k <int>, --key <int>               Rotation key value as an integer between 1 and 25 [default: 13].
     -i <string>, --input-text <string>  Input text to be operated on. Must contain only English letters and spaces.
-    -d <path>, --dictionary <path>      Specify a path to a text file containing valid English words. All non-English alpha characters will be stripped.
-";
+    -d <path>, --dictionary <path>      Specify a path to a text file containing valid English words. All non-English or non-alpha characters will be stripped.";
 
 #[derive(Debug, Deserialize)]
 struct Args {
@@ -28,9 +27,11 @@ struct Args {
     flag_dictionary: String,
 }
 
-fn validate_text(string: &String) {
+fn validate_text(string: &String) -> Result<(), &'static str> {
     if !string.chars().all( |c| c.is_ascii_alphabetic() || c.is_ascii_whitespace()){
-        panic!("The text you provided was not valid. Refer to the documentation for usage details.")
+        Err("The text you provided contained non-ascii-alphabetic characters.")
+    } else {
+        Ok(())
     }
 }
 
@@ -41,15 +42,35 @@ fn main() {
     // println!("{:?}", args);
 
     if args.cmd_encrypt {
-        validate_text(&args.flag_input_text);
+
+        validate_text(&args.flag_input_text).unwrap_or_else(|err| {
+            println!("{err}");
+            process::exit(1);
+        });
+
         caesar_suite::encrypt(args.flag_key as u8, args.flag_input_text);
+
     } else if args.cmd_decrypt {
-        validate_text(&args.flag_input_text);
+
+        validate_text(&args.flag_input_text).unwrap_or_else(|err| {
+            println!("{err}");
+            process::exit(1);
+        });
+
         caesar_suite::decrypt(args.flag_key as u8, args.flag_input_text);
+
     } else if args.cmd_brute_force {
+
+        validate_text(&args.flag_input_text).unwrap_or_else(|err| {
+            println!("{err}");
+            process::exit(1);
+        });
+
         caesar_suite::brute_force(args.flag_dictionary, args.flag_input_text);
+
     } else {
-        unreachable!();
+        println!("{USAGE}");
+        //unreachable!();
     }
 
 
